@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">TimeManager</string>
+
+    <string name="Jan">Jan</string>
+    <string name="Feb">Feb</string>
+    <string name="Mar">Mar</string>
+    <string name="Apr">Apr</string>
+    <string name="May">May</string>
+    <string name="Jun">Jun</string>
+    <string name="Jul">Jul</string>
+    <string name="Aug">Aug</string>
+    <string name="Sep">Sep</string>
+    <string name="Otc">Otc</string>
+    <string name="Nov">Nov</string>
+    <string name="Dec">Dec</string>
+    <string name="add_event">add</string>
+    <string name="event">Event</string>
+    <string name="time">Time</string>
+    <string name="date">Date</string>
+    <string name="event_type">Event Type</string>
+    <string name="work">work</string>
+    <string name="family">family</string>
+    <string name="holiday">holiday</string>
+    <string name="general">general</string>
+    <string name="start_time">Start time</string>
+    <string name="end_time">End time</string>
+    <string name="type_your_description_here">Type Your Description Here...</string>
+    <string name="untitled">Untitled</string>
+    <string name="event_title">Event Title</string>
+    <string name="location">location</string>
+    <string name="description">Description</string>
+    <string name="llocation">Location</string>
+    <string name="none">None</string>
+
+</resources>

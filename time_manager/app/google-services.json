@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "137242611216",
+    "firebase_url": "https://timemanager-c3c9a.firebaseio.com",
+    "project_id": "timemanager-c3c9a",
+    "storage_bucket": "timemanager-c3c9a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:137242611216:android:8b123da4fe0f7267",
+        "android_client_info": {
+          "package_name": "com.app.cooper.time_manager"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "137242611216-cr1artaltat4bb2uktmpoip0mjg4k8dr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.app.cooper.time_manager",
+            "certificate_hash": "6dee0e281996c4b10140f6e00a2538beef5dcf42"
+          }
+        },
+        {
+          "client_id": "137242611216-88s20nh3rumq7sc0eh0e86boehsglhlv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCsgIQPI-jQzOp-jBGIBbi_UisDPunTbM4"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "137242611216-88s20nh3rumq7sc0eh0e86boehsglhlv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

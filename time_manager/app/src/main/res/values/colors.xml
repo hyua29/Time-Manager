@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#ff68ff</color>
+    <color name="colorPrimaryDark">#9a49cc</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <!-- Custom color -->
+    <color name="Yellow">#ffdd00</color>
+    <color name="White">#ffffff</color>
+
+    <!-- Color Dialog Time Picker-->
+    <color name="CyanWater">#09b6b3</color>
+
+    <color name="grey">#acacac</color>
+
+    <color name="none">#f793fa</color>
+</resources>
