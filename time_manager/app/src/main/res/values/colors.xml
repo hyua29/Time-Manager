@@ -12,6 +12,7 @@
     <color name="CyanWater">#09b6b3</color>
 
     <color name="grey">#acacac</color>
+    <color name="light_grey">#cccccc</color>
 
     <color name="none">#f793fa</color>
 </resources>

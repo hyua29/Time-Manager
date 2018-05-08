@@ -31,5 +31,15 @@
     <string name="description">Description</string>
     <string name="llocation">Location</string>
     <string name="none">None</string>
+    <string name="setting">Setting</string>
+    <string name="account">Account</string>
+    <string name="save">Save</string>
+    <string name="my_account">My Account</string>
+    <string name="google_accounts">Google Accounts</string>
+    <string name="no_account">No Account</string>
+    <string name="signup">SignUp</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="signin">Sign In</string>
 
 </resources>

@@ -240,6 +240,10 @@ public class Event extends BaseObservable implements Parcelable {
         return String.format("%s %s %s", this.getStartYear(), this.getMonthString(), this.getStartDay());
     }
 
+    public String getDateStamp() {
+        return String.format("%s-%s-%s", this.getStartYear(), this.getStartMonth(), this.getStartDay());
+    }
+
     public String getStartTime() {
         return String.format("%s:%s", this.getStartHour(), this.getStartMinute());
     }

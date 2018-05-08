@@ -2,15 +2,11 @@ package com.app.cooper.time_manager.activities;
 
 import android.app.Activity;
 import android.app.DatePickerDialog;
-import android.app.Notification;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.databinding.DataBindingUtil;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.speech.tts.TextToSpeech;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 
@@ -24,15 +20,20 @@ import com.app.cooper.time_manager.R;
 import com.app.cooper.time_manager.custom.views.DatePickerFragment;
 import com.app.cooper.time_manager.custom.views.EventTypePickerDialog;
 import com.app.cooper.time_manager.custom.views.RangeTimePickerDialog;
-import com.app.cooper.time_manager.databinding.ActivityAddEventBinding;
 import com.app.cooper.time_manager.enums.NotificationType;
 import com.app.cooper.time_manager.event.management.EventRecorder;
 import com.app.cooper.time_manager.objects.Event;
 import com.app.cooper.time_manager.objects.EventAssociatedCalendarDay;
 import com.app.cooper.time_manager.uilts.SoftKeyboardUtils;
 import com.asksira.dropdownview.DropDownView;
-import com.prolificinteractive.materialcalendarview.CalendarDay;
-import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -150,6 +151,34 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
         event.setId(this.getEventIdFromSharePreference());
         EventAssociatedCalendarDay c = new EventAssociatedCalendarDay(event.getId(), event.getStartYear(), event.getStartMonth() ,event.getStartDay());
         EventRecorder.recordEvent(c, event);
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference dayRef = database.getReference("users/" + user.getUid() + "/events/" + event.getDateStamp());
+
+        dayRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            List<Event> yourStringArray;
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                if(snapshot.getValue() != null) {
+                    GenericTypeIndicator<List<Event>> t = new GenericTypeIndicator<List<Event>>() {};
+                    yourStringArray = snapshot.getValue(t);
+
+                } else {
+                    yourStringArray = new ArrayList<>();
+                }
+
+                yourStringArray.add(event);
+                dayRef.setValue(yourStringArray);
+
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Code
+            }
+        });
+
         this.finish();
     }
 

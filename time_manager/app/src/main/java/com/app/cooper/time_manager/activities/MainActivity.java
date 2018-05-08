@@ -6,18 +6,27 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.app.cooper.time_manager.R;
-import com.app.cooper.time_manager.custom.views.DatePickerFragment;
 import com.app.cooper.time_manager.custom.views.EventPickerDialog;
 import com.app.cooper.time_manager.decorator.CurrentDayDecorator;
 import com.app.cooper.time_manager.decorator.EventDecorator;
-import com.app.cooper.time_manager.event.management.EventRecorder;
 import com.app.cooper.time_manager.objects.Event;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
+import com.google.firebase.database.ValueEventListener;
 import com.prolificinteractive.materialcalendarview.CalendarDay;
 import com.prolificinteractive.materialcalendarview.DayViewDecorator;
 import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
@@ -25,34 +34,40 @@ import com.prolificinteractive.materialcalendarview.OnDateSelectedListener;
 import com.prolificinteractive.materialcalendarview.OnMonthChangedListener;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-
-import static com.prolificinteractive.materialcalendarview.MaterialCalendarView.SELECTION_MODE_NONE;
 
 
 public class MainActivity extends AppCompatActivity {
 
     private MaterialCalendarView calendarMonthView;
     private Toolbar toolbar;
-
+    private FirebaseAuth mAuth;
+    private FirebaseUser user;
+    private FirebaseDatabase firebaseDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+        firebaseDatabase = FirebaseDatabase.getInstance();
+
+        mAuth = FirebaseAuth.getInstance();
+        user = mAuth.getCurrentUser();
+
+        if (user == null) {
+            this.loginAnonymousUser();
+        } else
+            System.out.println(user.getUid());
 
         toolbar = findViewById(R.id.mainToolbar);
         calendarMonthView = findViewById(R.id.calendarMonthView);
         //calendarMonthView.setSelectionMode(SELECTION_MODE_NONE);
         calendarMonthView.setSelectionColor(getResources().getColor(R.color.none));
         //---------------------- testing
-
-        DayViewDecorator eventDecorator = new EventDecorator(getResources().getColor(R.color.grey), EventRecorder.getCalendarDays());
+        this.loadEventDays();
         //-------------------------
-        calendarMonthView.addDecorator(eventDecorator);
         calendarMonthView.addDecorator(new CurrentDayDecorator(getResources().getColor(R.color.colorPrimary)));
 
 
@@ -75,29 +90,38 @@ public class MainActivity extends AppCompatActivity {
         calendarMonthView.setOnDateChangedListener(new OnDateSelectedListener() {
             @Override
             public void onDateSelected(@NonNull MaterialCalendarView widget, @NonNull CalendarDay date, boolean selected) {
-
-                List<Event> eventList = EventRecorder.filterEventsByDate(date) ;
-                if (eventList.size() == 0 )
-                    return;
-                EventPickerDialog dialog = new EventPickerDialog();
-                dialog.setEventList(eventList);
-                dialog.show(getFragmentManager(), "");
+                getEventsAgainstDate(date);
             }
         });
 
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("message");
-
-        myRef.setValue("Hello, World!");
     }
 
+    private void loginAnonymousUser() {
+        mAuth.signInAnonymously()
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            Log.d("Anonymous sign in", "signInAnonymously:success");
+                            user = mAuth.getCurrentUser();
+                            //updateUI(user);
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Log.w("Anonymous sign in", "signInAnonymously:failure", task.getException());
+                            Toast.makeText(MainActivity.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
+                            //updateUI(null);
+                        }
+
+                    }
+                });
+    }
 
     @Override
     protected void onResume() {
         super.onResume();
-        DayViewDecorator eventDecorator = new EventDecorator(getResources().getColor(R.color.grey), EventRecorder.getCalendarDays());
-        //-------------------------
-        calendarMonthView.addDecorator(eventDecorator);
+        this.loadEventDays();
     }
 
     @Override
@@ -112,10 +136,15 @@ public class MainActivity extends AppCompatActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-
+        Intent intent;
         switch (item.getItemId()) {
             case R.id.add_event:
-                Intent intent = new Intent(this, AddEventActivity.class);
+                 intent = new Intent(this, AddEventActivity.class);
+                //this.startActivityForResult(intent, ADD_PERSON_REQUEST);
+                this.startActivity(intent);
+                break;
+            case R.id.account:
+                intent = new Intent(this, ShowAccountActivity.class);
                 //this.startActivityForResult(intent, ADD_PERSON_REQUEST);
                 this.startActivity(intent);
                 break;
@@ -178,6 +207,65 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
         return month;
+    }
+
+    /**
+     * load event day at start up
+     */
+    private void loadEventDays() {
+        final DatabaseReference dayRef = firebaseDatabase.getReference("users/" + user.getUid() + "/events/");
+
+        dayRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            Collection<CalendarDay> days = new ArrayList<>();
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+
+                for (DataSnapshot postSnapshot: snapshot.getChildren()) {
+                    String[] key = postSnapshot.getKey().split("-");
+
+                    if (key.length != 3)
+                        continue;
+                    int year = Integer.parseInt(key[0]);
+                    int month = Integer.parseInt((key[1]));
+                    int day = Integer.parseInt((key[2]));
+                    days.add(new CalendarDay(year, month, day));
+                }
+
+                DayViewDecorator eventDecorator = new EventDecorator(getResources().getColor(R.color.grey), days);
+                calendarMonthView.addDecorator(eventDecorator);
+
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Code
+            }
+        });
+    }
+
+    private void getEventsAgainstDate(CalendarDay c) {
+        String key = c.getYear() + "-" + c.getMonth() + "-" + c.getDay();
+        final DatabaseReference dayRef = firebaseDatabase.getReference("users/" + user.getUid() + "/events/" + key);
+
+        dayRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            List<Event> days;
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+
+                GenericTypeIndicator<List<Event>> t = new GenericTypeIndicator<List<Event>>() {};
+                days = snapshot.getValue(t);
+
+                if (days == null || days.size() == 0)
+                    return;
+
+                EventPickerDialog dialog = new EventPickerDialog();
+                dialog.setEventList(days);
+                dialog.show(getFragmentManager(), "");
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Code
+            }
+        });
     }
 
 }
