@@ -8,6 +8,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.constraint.ConstraintLayout;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 
 import android.support.v7.widget.Toolbar;
@@ -47,6 +48,7 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
     private TextView textViewEndTime;
     private TextView textViewEventType;
     private EditText eventTitle;
+    private DropDownView dropDownView;
     //private Event temp;
     //ActivityAddEventBinding binding;
 
@@ -64,20 +66,15 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
 
         setContentView(R.layout.activity_add_event);
 
-        event = new Event();
+        this.toolbar = findViewById(R.id.addEventToolbar);
+        this.textViewDate = findViewById(R.id.dateToShow);
+        this.textViewStartTime = findViewById(R.id.timeToShow);
+        this.textViewEndTime = findViewById(R.id.timeToShow1);
+        this.textViewEventType = findViewById(R.id.eventType);
+        this.eventTitle = findViewById(R.id.eventTitle);
+        this.dropDownView = findViewById(R.id.notificationPicker);
 
-        this.toolbar = (Toolbar) findViewById(R.id.addEventToolbar);
-        this.textViewDate = (TextView) findViewById(R.id.dateToShow);
-        this.textViewStartTime = (TextView) findViewById(R.id.timeToShow);
-        this.textViewEndTime = (TextView) findViewById(R.id.timeToShow1);
-        this.textViewEventType = (TextView) findViewById(R.id.eventType);
-        this.eventTitle = (EditText) findViewById(R.id.eventTitle);
 
-        final DropDownView dropDownView = (DropDownView) findViewById(R.id.notificationPicker);
-        this.textViewDate.setText(event.getDate());
-        this.textViewStartTime.setText(event.getStartTime());
-        this.textViewEndTime.setText(event.getEndTime());
-        this.textViewEventType.setText(event.getEventType());
         final List<String> dropList = new ArrayList<String>(Arrays.asList(NotificationType.ONCE.getType(),
                 NotificationType.DAILY_NOTIFICATION.getType(), NotificationType.WEEKLY_NOTIFICATION.getType(),
                 NotificationType.MONTHLY_NOTIFICATION.getType(), NotificationType.MONTHLY_NOTIFICATION.getType(),
@@ -139,6 +136,22 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
             }
         });
 
+        this.initEvent();
+
+    }
+
+    private void initEvent() {
+
+        event = getIntent().getParcelableExtra("event");
+        if(event == null) {
+            event = new Event();
+            event.setId(this.getEventIdFromSharePreference());
+        }
+            this.eventTitle.setText(event.getEventName());
+            this.textViewDate.setText(event.getDate());
+            this.textViewStartTime.setText(event.getStartTime());
+            this.textViewEndTime.setText(event.getEndTime());
+            this.textViewEventType.setText(event.getEventType());
     }
 
     public void cancelNewEventCreation(View view) {
@@ -148,7 +161,6 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
     //TODO: adapt it to firebase
     public void saveEvent(View view) {
         event.setEventName(eventTitle.getText().toString());
-        event.setId(this.getEventIdFromSharePreference());
         EventAssociatedCalendarDay c = new EventAssociatedCalendarDay(event.getId(), event.getStartYear(), event.getStartMonth() ,event.getStartDay());
         EventRecorder.recordEvent(c, event);
 
@@ -158,19 +170,23 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
         final DatabaseReference dayRef = database.getReference("users/" + user.getUid() + "/events/" + event.getDateStamp());
 
         dayRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            List<Event> yourStringArray;
+            List<Event> eventList;
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 if(snapshot.getValue() != null) {
                     GenericTypeIndicator<List<Event>> t = new GenericTypeIndicator<List<Event>>() {};
-                    yourStringArray = snapshot.getValue(t);
+                    eventList = snapshot.getValue(t);
+                    for (int i=0;i<eventList.size();i++) {
+                        if(event.getId() == eventList.get(i).getId())
+                            eventList.remove(i);
+                    }
 
                 } else {
-                    yourStringArray = new ArrayList<>();
+                    eventList = new ArrayList<>();
                 }
 
-                yourStringArray.add(event);
-                dayRef.setValue(yourStringArray);
+                eventList.add(event);
+                dayRef.setValue(eventList);
 
             }
             @Override
@@ -179,7 +195,7 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
             }
         });
 
-        this.finish();
+        NavUtils.navigateUpFromSameTask(this);
     }
 
     // Create an instance of the dialog fragment and show it

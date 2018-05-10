@@ -16,6 +16,7 @@ import com.app.cooper.time_manager.custom.views.EventPickerDialog;
 import com.app.cooper.time_manager.decorator.CurrentDayDecorator;
 import com.app.cooper.time_manager.decorator.EventDecorator;
 import com.app.cooper.time_manager.objects.Event;
+import com.app.cooper.time_manager.uilts.FireBaseUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -50,14 +51,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
-        firebaseDatabase = FirebaseDatabase.getInstance();
+
+        firebaseDatabase = FireBaseUtils.getDatabase();
 
         mAuth = FirebaseAuth.getInstance();
         user = mAuth.getCurrentUser();
 
         if (user == null) {
             this.loginAnonymousUser();
+            System.out.println("nulllllllllllllll user ");
         } else
             System.out.println(user.getUid());
 
