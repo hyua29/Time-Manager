@@ -2,24 +2,29 @@ package com.app.cooper.time_manager.activities;
 
 import android.app.Activity;
 import android.app.DatePickerDialog;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.speech.RecognizerIntent;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.app.cooper.time_manager.R;
 import com.app.cooper.time_manager.custom.views.DatePickerFragment;
 import com.app.cooper.time_manager.custom.views.EventTypePickerDialog;
+import com.app.cooper.time_manager.custom.views.LocationPicker;
 import com.app.cooper.time_manager.custom.views.RangeTimePickerDialog;
 import com.app.cooper.time_manager.enums.NotificationType;
 import com.app.cooper.time_manager.event.management.EventRecorder;
@@ -39,8 +44,9 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
-public class AddEventActivity extends AppCompatActivity implements RangeTimePickerDialog.OnTimeSelectListener, DatePickerDialog.OnDateSetListener, EventTypePickerDialog.OnEventTypeSelectListener {
+public class AddEventActivity extends AppCompatActivity implements RangeTimePickerDialog.OnTimeSelectListener, LocationPicker.OnLocationSelectListener, DatePickerDialog.OnDateSetListener, EventTypePickerDialog.OnEventTypeSelectListener {
     private Toolbar toolbar;
     private Event event;
     private TextView textViewDate;
@@ -53,16 +59,13 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
     //ActivityAddEventBinding binding;
 
     private final int REQUEST_DESCRIPTION = 1;
+    private final int REQUEST_SPEECH_INPUT = 2;
+    private final int REQUEST_Location = 3;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        //temp = new Event(); // your data is created here
-        //temp.setEventName("aaaaa");
-        //binding = DataBindingUtil.setContentView(this, R.layout.activity_add_event);
-        //binding.setTemp(temp); // generated setter based on the data in the layout file
-        //binding.executePendingBindings();
-        //System.out.println(temp);
 
         setContentView(R.layout.activity_add_event);
 
@@ -74,6 +77,20 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
         this.eventTitle = findViewById(R.id.eventTitle);
         this.dropDownView = findViewById(R.id.notificationPicker);
 
+        ImageView mic = findViewById(R.id.mic);
+        mic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startVoiceInput();
+            }
+        });
+        ConstraintLayout locationButton = findViewById(R.id.locationButton);
+        locationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getLocation();
+            }
+        });
 
         final List<String> dropList = new ArrayList<String>(Arrays.asList(NotificationType.ONCE.getType(),
                 NotificationType.DAILY_NOTIFICATION.getType(), NotificationType.WEEKLY_NOTIFICATION.getType(),
@@ -140,6 +157,26 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
 
     }
 
+    private void getLocation() {
+       //Intent intent = new Intent(getApplicationContext(), AddLocationActivity.class);
+        //startActivityForResult(intent, REQUEST_Location);
+        LocationPicker dialog = new LocationPicker();
+        dialog.show(getSupportFragmentManager(),"");
+
+    }
+
+    private void startVoiceInput() {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Hello, How can I help you?");
+        try {
+            startActivityForResult(intent, REQUEST_SPEECH_INPUT);
+        } catch (ActivityNotFoundException a) {
+
+        }
+    }
+
     private void initEvent() {
 
         event = getIntent().getParcelableExtra("event");
@@ -161,8 +198,6 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
     //TODO: adapt it to firebase
     public void saveEvent(View view) {
         event.setEventName(eventTitle.getText().toString());
-        EventAssociatedCalendarDay c = new EventAssociatedCalendarDay(event.getId(), event.getStartYear(), event.getStartMonth() ,event.getStartDay());
-        EventRecorder.recordEvent(c, event);
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -271,14 +306,35 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
                 event.setDescription(data.getStringExtra("description"));
         }
 
-        System.out.println(event);
+        switch (requestCode) {
+            case REQUEST_SPEECH_INPUT:
+                if (resultCode == RESULT_OK && null != data) {
+                    ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                    //mVoiceInputTv.setText(result.get(0));
+                    eventTitle.setText(result.get(0));
+                    System.out.println(result);
+                }
+                break;
+            case REQUEST_DESCRIPTION:
+                if (resultCode == RESULT_OK && null != data)
+                    event.setDescription(data.getStringExtra("description"));
+
+                break;
+
+            case REQUEST_Location:
+                if (resultCode == RESULT_OK && null != data)
+                    event.setLocation(data.getStringExtra("location"));
+
+                break;
+            }
+
     }
 
     private int getEventIdFromSharePreference() {
         int newId = PreferenceManager.getDefaultSharedPreferences(this).getInt("eventId", 0);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putInt("eventId",newId + 1);
+        editor.putInt("eventId", newId + 1);
         editor.apply();
         System.out.println("new ID!!!!!!!!!!!!!!!");
         System.out.println(newId);
@@ -286,4 +342,8 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
     }
 
 
+    @Override
+    public void onLocationSelect(String location) {
+        event.setLocation(location);
+    }
 }

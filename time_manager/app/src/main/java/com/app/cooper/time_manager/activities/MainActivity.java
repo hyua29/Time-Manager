@@ -1,8 +1,19 @@
 package com.app.cooper.time_manager.activities;
 
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
 
 import android.support.v7.widget.Toolbar;
@@ -11,11 +22,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.app.cooper.time_manager.AlarmReceiver;
 import com.app.cooper.time_manager.R;
 import com.app.cooper.time_manager.custom.views.EventPickerDialog;
 import com.app.cooper.time_manager.decorator.CurrentDayDecorator;
 import com.app.cooper.time_manager.decorator.EventDecorator;
 import com.app.cooper.time_manager.objects.Event;
+import com.app.cooper.time_manager.services.NotificationService;
 import com.app.cooper.time_manager.uilts.FireBaseUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -35,9 +48,9 @@ import com.prolificinteractive.materialcalendarview.OnDateSelectedListener;
 import com.prolificinteractive.materialcalendarview.OnMonthChangedListener;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
-
 
 public class MainActivity extends AppCompatActivity {
 
@@ -51,6 +64,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        this.createNotificationChannel(this);
+        //Intent serviceIntent = new Intent(this, NotificationService.class);
+        //startService(serviceIntent);
+        //startService(serviceIntent);
+        this.setNotificationAlarm();
+
 
         firebaseDatabase = FireBaseUtils.getDatabase();
 
@@ -168,40 +187,40 @@ public class MainActivity extends AppCompatActivity {
     private String parseMonth(int monthInt) {
         String month;
         switch (monthInt) {
-            case 1:
+            case 0:
                 month = getString(R.string.Jan);
                 break;
-            case 2:
+            case 1:
                 month = getString(R.string.Feb);
                 break;
-            case 3:
+            case 2:
                 month = getString(R.string.Mar);
                 break;
-            case 4:
+            case 3:
                 month = getString(R.string.Apr);
                 break;
-            case 5:
+            case 4:
                 month = getString(R.string.May);
                 break;
-            case 6:
+            case 5:
                 month = getString(R.string.Jun);
                 break;
-            case 7:
+            case 6:
                 month = getString(R.string.Jul);
                 break;
-            case 8:
+            case 7:
                 month = getString(R.string.Aug);
                 break;
-            case 9:
+            case 8:
                 month = getString(R.string.Sep);
                 break;
-            case 10:
+            case 9:
                 month = getString(R.string.Otc);
                 break;
-            case 11:
+            case 10:
                 month = getString(R.string.Nov);
                 break;
-            case 0:
+            case 11:
                 month = getString(R.string.Dec);
                 break;
             default:
@@ -233,7 +252,7 @@ public class MainActivity extends AppCompatActivity {
                     days.add(new CalendarDay(year, month, day));
                 }
 
-                DayViewDecorator eventDecorator = new EventDecorator(getResources().getColor(R.color.grey), days);
+                DayViewDecorator eventDecorator = new EventDecorator(getResources().getColor(R.color.CyanWater), days);
                 calendarMonthView.addDecorator(eventDecorator);
 
             }
@@ -269,5 +288,48 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    private AlarmManager alarmMgr;
+    private PendingIntent alarmIntent;
+
+    private void setNotificationAlarm() {
+
+    alarmMgr = (AlarmManager) this.getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+    Intent intent = new Intent(this.getApplicationContext(), AlarmReceiver.class);
+    alarmIntent = PendingIntent.getBroadcast(this.getApplicationContext(), 0, intent, 0);
+
+    // Set the alarm to start at 8:30 a.m.
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTimeInMillis(System.currentTimeMillis());
+    calendar.set(Calendar.HOUR_OF_DAY, 7);
+    calendar.set(Calendar.MINUTE, 30);
+
+    // setRepeating() lets you specify a precise custom interval--in this case,
+    // 20 minutes.
+    //alarmMgr.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),1000 * 60 * 20, alarmIntent);
+        //TODO: replace this
+        alarmMgr.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SystemClock.elapsedRealtime(),
+                        5000, alarmIntent);
+    System.out.println("AAAAAAAAAAAAAAAAA");
+
+    }
+
+    private void createNotificationChannel(Context c) {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = c.getString(R.string.channel_name);
+            String description = c.getString(R.string.channel_description);
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel channel = new NotificationChannel("notification", name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = c.getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
 
 }

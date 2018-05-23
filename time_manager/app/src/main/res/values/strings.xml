@@ -43,5 +43,8 @@
     <string name="signin">Sign In</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
+    <string name="channel_name">notification_channel</string>
+    <string name="channel_description">channel for notification</string>
+    <string name="button">Button</string>
 
 </resources>

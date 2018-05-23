@@ -28,7 +28,7 @@ public class SquareSpan implements LineBackgroundSpan {
             p.setColor(color);
         }
 
-        c.drawRect(left,bottom,right,bottom+(bottom-top), p);
+        c.drawRect(left+50,bottom,right-50,bottom+(bottom-top), p);
         p.setColor(oldColor);  // restore old color
 
     }
