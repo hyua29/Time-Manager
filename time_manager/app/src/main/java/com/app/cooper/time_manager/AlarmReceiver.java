@@ -1,7 +1,5 @@
 package com.app.cooper.time_manager;
 
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -11,8 +9,6 @@ import android.support.v4.app.NotificationManagerCompat;
 import android.widget.Toast;
 
 import com.app.cooper.time_manager.activities.MainActivity;
-import com.app.cooper.time_manager.custom.views.EventPickerDialog;
-import com.app.cooper.time_manager.decorator.EventDecorator;
 import com.app.cooper.time_manager.objects.Event;
 import com.app.cooper.time_manager.uilts.FireBaseUtils;
 import com.google.firebase.auth.FirebaseAuth;
@@ -30,19 +26,24 @@ import java.util.List;
 
 import static android.support.v4.app.NotificationCompat.VISIBILITY_PUBLIC;
 
+/**
+ * sends notification to the user one day before the events start
+ */
 public class AlarmReceiver extends BroadcastReceiver {
-
-    private Context context;
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Toast.makeText(context, "ALARM!!!!!!!!!!!!!!!!", Toast.LENGTH_LONG).show();
-        getEventsForTmr(context);
+        //Toast.makeText(context, "ALARM!!!!!!!!!!!!!!!!", Toast.LENGTH_LONG).show();
+        notifyEventsForNextDay(context);
 
     }
 
-
-
+    /**
+     * define how the notification looks like
+     * @param c
+     * @param title
+     * @param content
+     */
     private void createNotification(Context c, String title, String content) {
         Intent intent = new Intent(c, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -63,7 +64,11 @@ public class AlarmReceiver extends BroadcastReceiver {
         notificationManager.notify(1, mBuilder.build());
     }
 
-    private void getEventsForTmr(final Context c) {
+    /**
+     * notify events For next day
+     * @param c
+     */
+    private void notifyEventsForNextDay(final Context c) {
 
         FirebaseDatabase firebaseDatabase = FireBaseUtils.getDatabase();
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();

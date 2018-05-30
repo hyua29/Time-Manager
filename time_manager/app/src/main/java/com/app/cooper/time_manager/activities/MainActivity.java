@@ -12,8 +12,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
 
 import android.support.v7.widget.Toolbar;
@@ -28,7 +26,6 @@ import com.app.cooper.time_manager.custom.views.EventPickerDialog;
 import com.app.cooper.time_manager.decorator.CurrentDayDecorator;
 import com.app.cooper.time_manager.decorator.EventDecorator;
 import com.app.cooper.time_manager.objects.Event;
-import com.app.cooper.time_manager.services.NotificationService;
 import com.app.cooper.time_manager.uilts.FireBaseUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -82,11 +79,8 @@ public class MainActivity extends AppCompatActivity {
 
         toolbar = findViewById(R.id.mainToolbar);
         calendarMonthView = findViewById(R.id.calendarMonthView);
-        //calendarMonthView.setSelectionMode(SELECTION_MODE_NONE);
         calendarMonthView.setSelectionColor(getResources().getColor(R.color.none));
-        //---------------------- testing
         this.loadEventDays();
-        //-------------------------
         calendarMonthView.addDecorator(new CurrentDayDecorator(getResources().getColor(R.color.colorPrimary)));
 
 
@@ -264,6 +258,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * display event dialog when the user clicks a particular day
+     * @param c
+     */
     private void getEventsAgainstDate(CalendarDay c) {
         String key = c.getYear() + "-" + c.getMonth() + "-" + c.getDay();
         final DatabaseReference dayRef = firebaseDatabase.getReference("users/" + user.getUid() + "/events/" + key);
@@ -311,7 +309,6 @@ public class MainActivity extends AppCompatActivity {
         alarmMgr.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                 SystemClock.elapsedRealtime(),
                         5000, alarmIntent);
-    System.out.println("AAAAAAAAAAAAAAAAA");
 
     }
 

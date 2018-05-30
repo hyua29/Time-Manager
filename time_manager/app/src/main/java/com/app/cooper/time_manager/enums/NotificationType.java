@@ -1,5 +1,6 @@
 package com.app.cooper.time_manager.enums;
 
+//TODO: check whether enum is used properly
 public enum NotificationType {
     ONCE,
     DAILY_NOTIFICATION,

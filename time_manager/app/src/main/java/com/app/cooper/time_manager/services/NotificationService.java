@@ -11,6 +11,11 @@ import android.os.Process;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
+/**
+ * A background service that sends notification
+ * todo: remove this
+ */
+@Deprecated
 public class NotificationService extends Service {
 
     private Looper mServiceLooper;
