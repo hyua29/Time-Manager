@@ -46,5 +46,7 @@
     <string name="channel_name">notification_channel</string>
     <string name="channel_description">channel for notification</string>
     <string name="button">Button</string>
+    <string name="no_account_yet_create_one">No account yet? Create one</string>
+    <string name="confirm">Confirm</string>
 
 </resources>

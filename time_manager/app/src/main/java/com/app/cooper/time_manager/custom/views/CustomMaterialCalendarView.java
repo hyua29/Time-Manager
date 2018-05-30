@@ -6,7 +6,7 @@ import android.view.MotionEvent;
 
 import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
 
-/**
+/** todo: remove
  * this MaterialCalendarView allows both itself and its parent to consume the same event
  */
 public class CustomMaterialCalendarView extends MaterialCalendarView {

@@ -145,7 +145,8 @@
     <android.support.constraint.ConstraintLayout
         android:id="@+id/locationLayout"
         android:layout_width="0dp"
-        android:layout_height="54dp"
+        android:layout_height="wrap_content"
+        android:minHeight="54dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -153,12 +154,12 @@
 
         <TextView
             android:id="@+id/location"
-            android:layout_width="wrap_content"
-            android:layout_height="16dp"
+            android:layout_width="230dp"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="15dp"
             android:layout_marginLeft="30dp"
             android:layout_marginStart="30dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="15dp"
             android:text="@string/llocation"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@+id/imageView7"
@@ -169,12 +170,10 @@
             android:id="@+id/imageView7"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="15dp"
             android:layout_marginLeft="26dp"
             android:layout_marginStart="26dp"
             android:layout_marginTop="15dp"
             android:src="@drawable/ic_location_on_black_24dp"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -183,7 +182,8 @@
     <android.support.constraint.ConstraintLayout
         android:id="@+id/descriptionLayout"
         android:layout_width="0dp"
-        android:layout_height="54dp"
+        android:layout_height="wrap_content"
+        android:minHeight="54dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -191,8 +191,8 @@
 
         <TextView
             android:id="@+id/description"
-            android:layout_width="wrap_content"
-            android:layout_height="16dp"
+            android:layout_width="230dp"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="15dp"
             android:layout_marginLeft="30dp"
             android:layout_marginStart="30dp"
@@ -207,12 +207,10 @@
             android:id="@+id/imageView8"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="15dp"
             android:layout_marginLeft="26dp"
             android:layout_marginStart="26dp"
             android:layout_marginTop="15dp"
             android:src="@drawable/ic_description_black_24dp"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 

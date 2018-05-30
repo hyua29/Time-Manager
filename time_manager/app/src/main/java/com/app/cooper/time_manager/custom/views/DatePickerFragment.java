@@ -9,7 +9,9 @@ import com.app.cooper.time_manager.R;
 
 import java.util.Calendar;
 
-
+/**
+ * A date picker
+ */
 public class DatePickerFragment extends DialogFragment {
 
     @Override

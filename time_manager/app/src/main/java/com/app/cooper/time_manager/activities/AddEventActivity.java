@@ -55,13 +55,10 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
     private TextView textViewEventType;
     private EditText eventTitle;
     private DropDownView dropDownView;
-    //private Event temp;
-    //ActivityAddEventBinding binding;
 
     private final int REQUEST_DESCRIPTION = 1;
     private final int REQUEST_SPEECH_INPUT = 2;
     private final int REQUEST_Location = 3;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,8 +110,6 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
             public void onItemSelected(DropDownView view, int position) {
                 dropDownView.setPlaceholderText(dropList.get(position));
                 event.setNotificationType(dropList.get(position));
-                //temp.setEventName("ccc");
-                //System.out.println(temp);
 
             }
         });
@@ -157,14 +152,18 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
 
     }
 
+    /**
+     * open map dialog
+     */
     private void getLocation() {
-       //Intent intent = new Intent(getApplicationContext(), AddLocationActivity.class);
-        //startActivityForResult(intent, REQUEST_Location);
         LocationPicker dialog = new LocationPicker();
         dialog.show(getSupportFragmentManager(),"");
 
     }
 
+    /**
+     * start recording user voice and get the result as text
+     */
     private void startVoiceInput() {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
@@ -177,6 +176,9 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
         }
     }
 
+    /**
+     * if the user chooses to edit the event, write all event attributes on the page
+     */
     private void initEvent() {
 
         event = getIntent().getParcelableExtra("event");
@@ -230,10 +232,12 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
             }
         });
 
-        NavUtils.navigateUpFromSameTask(this);
+        NavUtils.navigateUpFromSameTask(this);  // go back to main page
     }
 
-    // Create an instance of the dialog fragment and show it
+    /**
+     * display time picker
+     */
     private void showTimePickerDialog() {
         RangeTimePickerDialog dialog = new RangeTimePickerDialog();
         dialog.setIs24HourView(false);
@@ -249,11 +253,17 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
         dialog.show(getFragmentManager(), "");
     }
 
+    /**
+     * display date picker
+     */
     private void showDatePickerDialog() {
         DatePickerFragment dialog = new DatePickerFragment();
         dialog.show(getFragmentManager(), "");
     }
 
+    /**
+     * display event type picker
+     */
     private void showEventTypePicker() {
         EventTypePickerDialog dialog = new EventTypePickerDialog();
         dialog.show(getFragmentManager(), "");
@@ -283,6 +293,10 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
         System.out.println(event);
     }
 
+    @Override
+    public void onLocationSelect(String location) {
+        event.setLocation(location);
+    }
 
     @Override
     public void onSelectedEventType(String choice) {
@@ -292,7 +306,7 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
     }
 
     /**
-     * receive the description and store it to event
+     * receive the description or speech result and store it to event
      * @param requestCode
      * @param resultCode
      * @param data
@@ -330,6 +344,10 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
 
     }
 
+    /**
+     * each event needs to have a unique id
+     * @return
+     */
     private int getEventIdFromSharePreference() {
         int newId = PreferenceManager.getDefaultSharedPreferences(this).getInt("eventId", 0);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -341,9 +359,4 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
         return newId;
     }
 
-
-    @Override
-    public void onLocationSelect(String location) {
-        event.setLocation(location);
-    }
 }

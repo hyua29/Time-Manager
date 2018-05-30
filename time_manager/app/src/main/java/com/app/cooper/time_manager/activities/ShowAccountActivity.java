@@ -22,6 +22,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * display all the accounts this user has logged in
+ */
 public class ShowAccountActivity extends AppCompatActivity {
 
     @Override

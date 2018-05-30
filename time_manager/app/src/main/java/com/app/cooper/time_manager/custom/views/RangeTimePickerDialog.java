@@ -28,6 +28,11 @@ import com.app.cooper.time_manager.R;
 
 import java.lang.reflect.Field;
 
+/**
+ * Reference: https://github.com/PuffoCyano/Range-Time-Picker-Dialog
+ * This library is not compatible with the version this app is running on, so an direct import isn't practical
+ * Allow user to pick time
+ */
 public class RangeTimePickerDialog extends DialogFragment {
 
     public static String HOUR_START = "hourStart";
@@ -102,14 +107,14 @@ public class RangeTimePickerDialog extends DialogFragment {
         // Pass null as the parent view because its going in the dialog layout
         final View dialogView = inflater.inflate(R.layout.time_picker_dialog, null);
         builder.setView(dialogView);
-        tabLayout = (TabLayout) dialogView.findViewById(R.id.tabLayout);
-        tabItemStartTime = (TabItem) dialogView.findViewById(R.id.tabStartTime);
-        tabItemEndTime = (TabItem) dialogView.findViewById(R.id.tabEndTime);
-        timePickerStart = (TimePicker) dialogView.findViewById(R.id.timePickerStart);
-        timePickerEnd = (TimePicker) dialogView.findViewById(R.id.timePickerEnd);
-        btnPositive = (Button) dialogView.findViewById(R.id.btnPositiveDialog);
-        btnNegative = (Button) dialogView.findViewById(R.id.btnNegativeDialog);
-        CardView cardView = (CardView) dialogView.findViewById(R.id.ly_root);
+        tabLayout = dialogView.findViewById(R.id.tabLayout);
+        tabItemStartTime = dialogView.findViewById(R.id.tabStartTime);
+        tabItemEndTime = dialogView.findViewById(R.id.tabEndTime);
+        timePickerStart = dialogView.findViewById(R.id.timePickerStart);
+        timePickerEnd = dialogView.findViewById(R.id.timePickerEnd);
+        btnPositive = dialogView.findViewById(R.id.btnPositiveDialog);
+        btnNegative = dialogView.findViewById(R.id.btnNegativeDialog);
+        CardView cardView = dialogView.findViewById(R.id.ly_root);
 
         // Set TimePicker header background color
         setTimePickerHeaderBackgroundColor(this, ContextCompat.getColor(getActivity(), colorBackgroundTimePickerHeader), "timePickerStart");

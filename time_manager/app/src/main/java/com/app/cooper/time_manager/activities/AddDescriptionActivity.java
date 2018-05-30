@@ -10,6 +10,9 @@ import android.widget.EditText;
 import com.app.cooper.time_manager.R;
 import com.app.cooper.time_manager.uilts.SoftKeyboardUtils;
 
+/**
+ * controller for event description page
+ */
 public class AddDescriptionActivity extends AppCompatActivity {
 
     @Override
@@ -21,6 +24,10 @@ public class AddDescriptionActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * return result to the event creation page
+     * @param view
+     */
     public void saveDescription(View view) {
         EditText description = findViewById(R.id.description);
         Intent returnIntent = new Intent();

@@ -59,17 +59,15 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseUser user;
     private FirebaseDatabase firebaseDatabase;
+    private AlarmManager alarmMgr;
+    private PendingIntent alarmIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         this.createNotificationChannel(this);
-        //Intent serviceIntent = new Intent(this, NotificationService.class);
-        //startService(serviceIntent);
-        //startService(serviceIntent);
         this.setNotificationAlarm();
-
 
         firebaseDatabase = FireBaseUtils.getDatabase();
 
@@ -117,6 +115,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * sign in the user if the user does not have an account
+     */
     private void loginAnonymousUser() {
         mAuth.signInAnonymously()
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -289,11 +290,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private AlarmManager alarmMgr;
-    private PendingIntent alarmIntent;
-
+    /**
+     * register a service that sends notifications to the user one day before events take place
+     */
     private void setNotificationAlarm() {
-
     alarmMgr = (AlarmManager) this.getApplicationContext().getSystemService(Context.ALARM_SERVICE);
     Intent intent = new Intent(this.getApplicationContext(), AlarmReceiver.class);
     alarmIntent = PendingIntent.getBroadcast(this.getApplicationContext(), 0, intent, 0);
@@ -315,6 +315,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * a channel is required to send notification to users
+     * @param c
+     */
     private void createNotificationChannel(Context c) {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library

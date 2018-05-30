@@ -30,9 +30,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * display the event on the screen
+ */
 public class ShowEventActivity extends AppCompatActivity {
     private FirebaseDatabase firebaseDatabase;
     private Event e;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,6 +48,13 @@ public class ShowEventActivity extends AppCompatActivity {
         this.setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
+        this.readInAttributes();
+    }
+
+    /**
+     * read attributes from 'e' and display it on the screen
+     */
+    private void readInAttributes() {
         Intent intent = getIntent();
         e = intent.getParcelableExtra("eventSelected");
 
@@ -73,17 +84,7 @@ public class ShowEventActivity extends AppCompatActivity {
             description.setText(e.getDescription());
         else
             description.setText("none");
-
-
     }
-
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        System.out.println(e);
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -93,10 +94,7 @@ public class ShowEventActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        Intent intent;
+      Intent intent;
         switch (item.getItemId()) {
             case R.id.edit_event:
                 intent = new Intent(this, AddEventActivity.class);
@@ -109,6 +107,10 @@ public class ShowEventActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * display delete warning dialog
+     * remove event from the database if the action is confirmed
+     */
     private void deleteEvent() {
         AlertDialog.Builder deleteAlert = new AlertDialog.Builder(ShowEventActivity.this);
         deleteAlert.setTitle("Delete Event?");

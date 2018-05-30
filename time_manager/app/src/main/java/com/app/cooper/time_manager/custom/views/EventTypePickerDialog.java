@@ -13,20 +13,18 @@ import android.widget.TextView;
 
 import com.app.cooper.time_manager.R;
 
+/**
+ * A dialog on which user can choose which type the event is
+ */
 public class EventTypePickerDialog extends DialogFragment {
 
     private OnEventTypeSelectListener mCallback;
-    //private TextView work;
-    //private TextView family;
-    //private TextView holiday;
-    //private TextView general;
     private String choice;
 
-    public interface OnEventTypeSelectListener {
 
+    public interface OnEventTypeSelectListener {
         void onSelectedEventType(String choice);
     }
-
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -39,13 +37,24 @@ public class EventTypePickerDialog extends DialogFragment {
         final View dialogView = inflater.inflate(R.layout.event_type_picker, null);
         builder.setView(dialogView);
         AlertDialog alertDialog = builder.create();
+        setSelectionListeners(dialogView, alertDialog);
+
+        return alertDialog;
+    }
+
+    /**
+     * set listeners for chooses on the list
+     * @param dialogView
+     * @param alertDialog
+     */
+    private void setSelectionListeners(final View dialogView, AlertDialog alertDialog) {
         alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
             public void onShow(DialogInterface dialogInterface) {
-                final TextView work = (TextView) dialogView.findViewById(R.id.work);
-                final TextView family = (TextView) dialogView.findViewById(R.id.family);
-                final TextView holiday = (TextView) dialogView.findViewById(R.id.holiday);
-                final TextView general = (TextView) dialogView.findViewById(R.id.general);
+                final TextView work = dialogView.findViewById(R.id.work);
+                final TextView family = dialogView.findViewById(R.id.family);
+                final TextView holiday = dialogView.findViewById(R.id.holiday);
+                final TextView general = dialogView.findViewById(R.id.general);
                 work.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -77,12 +86,14 @@ public class EventTypePickerDialog extends DialogFragment {
                 });
             }
         });
-        return alertDialog;
     }
 
+    /**
+     * return result to the parent
+     */
     private void returnResult() {
-        dismiss();
         mCallback.onSelectedEventType(choice);
+        dismiss();
     }
 
     @Override

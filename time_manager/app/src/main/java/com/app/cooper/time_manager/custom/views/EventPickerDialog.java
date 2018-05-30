@@ -18,15 +18,9 @@ import java.util.List;
 
 public class EventPickerDialog extends DialogFragment {
 
-    private EventTypePickerDialog.OnEventTypeSelectListener mCallback;
     private ListView eventListView;
     private List<Event> eventList;
     private EventListAdaptor adaptor;
-
-    public interface OnEventSelectListener {
-        void onSelectedEvent();
-    }
-
 
     public void setEventList(List<Event> eventList) {
         this.eventList = eventList;

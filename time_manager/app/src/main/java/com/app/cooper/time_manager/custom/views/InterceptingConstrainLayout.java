@@ -7,7 +7,9 @@ import android.view.MotionEvent;
 
 import com.app.cooper.time_manager.listener.OnSwipeTouchListener;
 
-
+/**
+ * This layout extends ConstraintLayout and allows touch events on the children views to be intercepted by the parent
+ */
 public class InterceptingConstrainLayout extends ConstraintLayout {
 
     private OnSwipeTouchListener onSwipeTouchListener;

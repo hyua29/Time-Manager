@@ -13,6 +13,9 @@ import com.app.cooper.time_manager.objects.Event;
 
 import java.util.List;
 
+/**
+ * event list adaptor
+ */
 public class EventListAdaptor extends BaseAdapter {
     private Context context;
     private List<Event> eventList;
