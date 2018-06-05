@@ -100,23 +100,23 @@ public class MainActivity extends AppCompatActivity {
         } else
             System.out.println(user.getUid());
 
-        setupElements();
+        this.setupElements();
         this.loadEventDays();
-
-        renderMonthView();
-
+        this.renderMonthView();
         this.setSupportActionBar(toolbar);
-
-
 
         CalendarDay currentDate = calendarMonthView.getCurrentDate();
         updateDateOnTitle(String.valueOf(currentDate.getYear()), parseMonth(currentDate.getMonth()));  // update title when page changed
 
+        this.loadGoogleAccount();
+    }
 
-
+    /**
+     * load google account from shared preference
+     */
+    private void loadGoogleAccount() {
         String accountName = getSharedPreferences(GoogleAPIChecking.PREF, Context.MODE_PRIVATE).
                 getString(GoogleAPIChecking.PREF_ACCOUNT_NAME,  null);
-
         googleAccountCredential.setSelectedAccountName(accountName);
     }
 
