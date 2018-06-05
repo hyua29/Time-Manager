@@ -15,17 +15,16 @@ import android.support.v7.app.AppCompatActivity;
 
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.app.cooper.time_manager.R;
-import com.app.cooper.time_manager.custom.views.DatePickerFragment;
-import com.app.cooper.time_manager.custom.views.EventTypePickerDialog;
-import com.app.cooper.time_manager.custom.views.LocationPicker;
-import com.app.cooper.time_manager.custom.views.RangeTimePickerDialog;
+import com.app.cooper.time_manager.custom.views.pickers.DatePickerFragmentDialog;
+import com.app.cooper.time_manager.custom.views.pickers.EventTypePickerDialog;
+import com.app.cooper.time_manager.custom.views.pickers.LocationPicker;
+import com.app.cooper.time_manager.custom.views.pickers.RangeTimePickerDialog;
 import com.app.cooper.time_manager.enums.NotificationType;
 import com.app.cooper.time_manager.objects.Event;
 import com.app.cooper.time_manager.uilts.SoftKeyboardUtils;
@@ -64,13 +63,22 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
 
         setContentView(R.layout.activity_add_event);
 
-        this.toolbar = findViewById(R.id.addEventToolbar);
-        this.textViewDate = findViewById(R.id.dateToShow);
-        this.textViewStartTime = findViewById(R.id.timeToShow);
-        this.textViewEndTime = findViewById(R.id.timeToShow1);
-        this.textViewEventType = findViewById(R.id.eventType);
-        this.eventTitle = findViewById(R.id.eventTitle);
-        this.dropDownView = findViewById(R.id.notificationPicker);
+        this.initElements();
+        this.setTitle("");
+        this.setSupportActionBar(toolbar);
+
+        SoftKeyboardUtils.hideKeyboardByClicking(this, findViewById(android.R.id.content));
+
+        this.setupListeners();
+
+        this.initEvent();
+
+    }
+
+    /**
+     * initialize all buttons on the screen
+     */
+    private void setupListeners() {
 
         ImageView mic = findViewById(R.id.mic);
         mic.setOnClickListener(new View.OnClickListener() {
@@ -111,12 +119,8 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
 
             }
         });
-        this.setTitle("");
-        this.setSupportActionBar(toolbar);
-        SoftKeyboardUtils.hideKeyboardByClicking(this, findViewById(android.R.id.content));
-        System.out.println(event);
 
-        ConstraintLayout eventTypePickerButton = (ConstraintLayout) findViewById(R.id.eventTypePickerButton);
+
         textViewStartTime.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -124,12 +128,21 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
             }
         });
 
-        this.textViewDate.setOnClickListener(new View.OnClickListener() {
+        textViewEndTime.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showTimePickerDialog();
+            }
+        });
+
+        textViewDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 showDatePickerDialog();
             }
         });
+
+        ConstraintLayout eventTypePickerButton = findViewById(R.id.eventTypePickerButton);
         eventTypePickerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -145,9 +158,17 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
                 startActivityForResult(intent, REQUEST_DESCRIPTION);
             }
         });
+    }
 
-        this.initEvent();
 
+    private void initElements() {
+        this.toolbar = findViewById(R.id.addEventToolbar);
+        this.textViewDate = findViewById(R.id.dateToShow);
+        this.textViewStartTime = findViewById(R.id.timeToShow);
+        this.textViewEndTime = findViewById(R.id.timeToShow1);
+        this.textViewEventType = findViewById(R.id.eventType);
+        this.eventTitle = findViewById(R.id.eventTitle);
+        this.dropDownView = findViewById(R.id.notificationPicker);
     }
 
     /**
@@ -255,7 +276,7 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
      * display date picker
      */
     private void showDatePickerDialog() {
-        DatePickerFragment dialog = new DatePickerFragment();
+        DatePickerFragmentDialog dialog = new DatePickerFragmentDialog();
         dialog.show(getFragmentManager(), "");
     }
 
@@ -285,9 +306,6 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
         event.setStartMonth(month);
         event.setStartDay(day);
         textViewDate.setText(String.format(event.getDate()));
-        //Calendar cal = new GregorianCalendar(year, month, day);
-        //final DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
-        //System.out.println(dateFormat.format(cal.getTime()));
         System.out.println(event);
     }
 

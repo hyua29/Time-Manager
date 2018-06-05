@@ -12,7 +12,6 @@ import android.view.MenuItem;
 import android.widget.TextView;
 
 import com.app.cooper.time_manager.R;
-import com.app.cooper.time_manager.decorator.EventDecorator;
 import com.app.cooper.time_manager.objects.Event;
 import com.app.cooper.time_manager.uilts.FireBaseUtils;
 import com.google.firebase.auth.FirebaseAuth;
@@ -23,11 +22,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
-import com.prolificinteractive.materialcalendarview.CalendarDay;
-import com.prolificinteractive.materialcalendarview.DayViewDecorator;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**

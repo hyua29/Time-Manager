@@ -48,5 +48,7 @@
     <string name="button">Button</string>
     <string name="no_account_yet_create_one">No account yet? Create one</string>
     <string name="confirm">Confirm</string>
+    <string name="sync_from_google">Sync From Google</string>
+    <string name="credit">Credits</string>
 
 </resources>

@@ -39,6 +39,10 @@ dependencies {
     implementation 'com.github.guchan-fout:material-calendarview:v1.4.3'
     implementation 'com.google.android.gms:play-services-location:15.0.1'
     implementation 'com.google.android.gms:play-services-maps:15.0.1'
+    implementation 'com.google.android.gms:play-services-auth:15.0.1'
+    implementation 'com.google.apis:google-api-services-calendar:v3-rev323-1.23.0'
+    implementation 'com.google.api-client:google-api-client-android:1.23.0'
+    implementation 'pub.devrel:easypermissions:0.3.0'
 
     implementation 'com.google.firebase:firebase-core:15.0.0'
     implementation 'com.google.firebase:firebase-database:15.0.0'

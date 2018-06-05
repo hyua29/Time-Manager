@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 /**
  * A background service that sends notification
+ * replaced by alarm clock
  * todo: remove this
  */
 @Deprecated

@@ -9,14 +9,20 @@
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/setting"
-        android:title="@string/setting"
+        android:id="@+id/sync"
+        android:title="@string/sync_from_google"
         android:icon="@drawable/ic_settings_black_24dp"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/account"
         android:title="@string/account"
+        android:icon="@drawable/ic_account_circle_black_24dp"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/credits"
+        android:title="@string/credit"
         android:icon="@drawable/ic_account_circle_black_24dp"
         app:showAsAction="never" />
 

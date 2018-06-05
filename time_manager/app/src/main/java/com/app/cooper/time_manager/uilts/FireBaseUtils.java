@@ -2,6 +2,9 @@ package com.app.cooper.time_manager.uilts;
 
 import com.google.firebase.database.FirebaseDatabase;
 
+/**
+ * hold one firebaseDatabase instance
+ */
 public class FireBaseUtils {
     private static FirebaseDatabase firebaseDatabase;
 

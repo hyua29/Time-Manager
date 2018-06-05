@@ -3,11 +3,13 @@
     package="com.app.cooper.time_manager">
 
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <!-- uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <!-- uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" -->
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -15,16 +17,18 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        <receiver android:name=".uilts.AlarmReceiver" />
 
-        <receiver android:name=".AlarmReceiver"/>
         <uses-library android:name="com.google.android.maps" />
-        <service android:name=".services.NotificationService"/>
+
+        <service android:name=".services.NotificationService" />
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyCsgIQPI-jQzOp-jBGIBbi_UisDPunTbM4"/>
+            android:value="AIzaSyCsgIQPI-jQzOp-jBGIBbi_UisDPunTbM4" />
         <meta-data
             android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version"/>
+            android:value="@integer/google_play_services_version" />
 
         <activity android:name=".activities.MainActivity">
             <intent-filter>
@@ -50,8 +54,7 @@
         </activity>
         <activity android:name=".activities.ShowAccountActivity" />
         <activity android:name=".activities.AddAccountActivity" />
-
-
+        <activity android:name=".activities.CreditActivity" />
     </application>
 
 </manifest>

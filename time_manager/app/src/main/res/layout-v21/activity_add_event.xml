@@ -229,7 +229,7 @@
             android:layout_width="0dp"
             android:layout_height="70dp"
             android:orientation="horizontal"
-            android:weightSum="3"
+            android:weightSum="2"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/layoutLine6">
@@ -251,29 +251,6 @@
                     android:layout_marginStart="66dp"
                     android:layout_marginTop="23dp"
                     android:src="@drawable/ic_location_on_black_24dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </android.support.constraint.ConstraintLayout>
-
-            <android.support.constraint.ConstraintLayout
-                android:id="@+id/notificationTimeButton"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1">
-
-                <ImageView
-                    android:id="@+id/imageView3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="23dp"
-                    android:layout_marginEnd="66dp"
-                    android:layout_marginLeft="66dp"
-                    android:layout_marginRight="66dp"
-                    android:layout_marginStart="66dp"
-                    android:layout_marginTop="23dp"
-                    android:src="@drawable/ic_notifications_black_24dp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -356,8 +333,6 @@
             android:src="@drawable/ic_mic_black_24dp" />
 
     </LinearLayout>
-
-
 
 </android.support.constraint.ConstraintLayout>
 

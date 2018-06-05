@@ -7,8 +7,8 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
-/*
-This class provides generic solutions to manage activity views
+/**
+ * allow the soft keyboard to be hidden by clicking outside the input fields
  */
 public class SoftKeyboardUtils {
 

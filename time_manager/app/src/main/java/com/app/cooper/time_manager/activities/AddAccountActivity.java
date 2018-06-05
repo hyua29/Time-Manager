@@ -1,6 +1,8 @@
 package com.app.cooper.time_manager.activities;
 
 import android.support.annotation.NonNull;
+import android.support.v4.app.NavUtils;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -32,9 +34,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
+ * Reference: https://firebase.google.com/docs/database/android/start/
+ *
  * Controller for register page
  */
 public class AddAccountActivity extends AppCompatActivity {
+
     private FirebaseAuth mAuth;
     private EditText email;
     private EditText passwd;
@@ -48,9 +53,7 @@ public class AddAccountActivity extends AppCompatActivity {
         SoftKeyboardUtils.hideKeyboardByClicking(this, findViewById(android.R.id.content));
 
         this.setTitle("Login");
-        email = findViewById(R.id.email);
-        passwd = findViewById(R.id.password);
-        warning = findViewById(R.id.warning);
+        initElements();
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -62,6 +65,12 @@ public class AddAccountActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void initElements() {
+        email = findViewById(R.id.email);
+        passwd = findViewById(R.id.password);
+        warning = findViewById(R.id.warning);
     }
 
     /**
@@ -94,6 +103,7 @@ public class AddAccountActivity extends AppCompatActivity {
 
                 //dayRef.setValue(events);
                 passEventsToNewAccount(events);
+                finish();
             }
             @Override
             public void onCancelled(DatabaseError databaseError) {
@@ -125,6 +135,7 @@ public class AddAccountActivity extends AppCompatActivity {
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w("Sign UP", "createUserWithEmail:failure", task.getException());
+                            showError(task.getException().getMessage());
                             Toast.makeText(AddAccountActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                         }
@@ -152,10 +163,11 @@ public class AddAccountActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d("Sign In", "signInWithEmail:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-
+                            finish();
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w("Sign In", "signInWithEmail:failure", task.getException());
+                            showError(task.getException().getMessage());
                             Toast.makeText(AddAccountActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
 
@@ -194,4 +206,15 @@ public class AddAccountActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * display error message if failed to login
+     * @param errorMessage
+     */
+    private void showError(String errorMessage) {
+        AlertDialog.Builder saveAlert = new AlertDialog.Builder(this);
+        saveAlert.setTitle("Oops!");
+        saveAlert.setMessage(errorMessage);
+        saveAlert.setPositiveButton("Confirm", null);
+        saveAlert.create().show();
+    }
 }

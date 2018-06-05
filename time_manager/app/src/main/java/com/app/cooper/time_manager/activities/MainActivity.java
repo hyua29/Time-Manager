@@ -1,34 +1,45 @@
 package com.app.cooper.time_manager.activities;
 
 import android.app.AlarmManager;
-import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.app.cooper.time_manager.AlarmReceiver;
+import com.app.cooper.time_manager.uilts.AlarmReceiver;
 import com.app.cooper.time_manager.R;
-import com.app.cooper.time_manager.custom.views.EventPickerDialog;
-import com.app.cooper.time_manager.decorator.CurrentDayDecorator;
-import com.app.cooper.time_manager.decorator.EventDecorator;
+import com.app.cooper.time_manager.custom.views.pickers.EventPickerDialog;
+import com.app.cooper.time_manager.custom.views.monthview.CurrentDayDecorator;
+import com.app.cooper.time_manager.custom.views.monthview.EventDecorator;
 import com.app.cooper.time_manager.objects.Event;
 import com.app.cooper.time_manager.uilts.FireBaseUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.DateTime;
+import com.google.api.client.util.ExponentialBackOff;
+import com.google.api.services.calendar.model.Events;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -44,20 +55,28 @@ import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
 import com.prolificinteractive.materialcalendarview.OnDateSelectedListener;
 import com.prolificinteractive.materialcalendarview.OnMonthChangedListener;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Reference: https://developers.google.com/calendar/quickstart/android
+ */
 public class MainActivity extends AppCompatActivity {
+
+    private GoogleAccountCredential googleAccountCredential;
 
     private MaterialCalendarView calendarMonthView;
     private Toolbar toolbar;
-    private FirebaseAuth mAuth;
+    private FirebaseAuth firebaseAuth;
     private FirebaseUser user;
     private FirebaseDatabase firebaseDatabase;
     private AlarmManager alarmMgr;
     private PendingIntent alarmIntent;
+    private ProgressBar progressBarMainPage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,36 +85,53 @@ public class MainActivity extends AppCompatActivity {
         this.createNotificationChannel(this);
         this.setNotificationAlarm();
 
+
+        googleAccountCredential = GoogleAccountCredential.usingOAuth2(
+                getApplicationContext(), Arrays.asList(GoogleAPIChecking.SCOPES))
+                .setBackOff(new ExponentialBackOff());
+
         firebaseDatabase = FireBaseUtils.getDatabase();
 
-        mAuth = FirebaseAuth.getInstance();
-        user = mAuth.getCurrentUser();
+        firebaseAuth = FirebaseAuth.getInstance();
+        user = firebaseAuth.getCurrentUser();
 
         if (user == null) {
             this.loginAnonymousUser();
-            System.out.println("nulllllllllllllll user ");
         } else
             System.out.println(user.getUid());
 
-        toolbar = findViewById(R.id.mainToolbar);
-        calendarMonthView = findViewById(R.id.calendarMonthView);
-        calendarMonthView.setSelectionColor(getResources().getColor(R.color.none));
+        setupElements();
         this.loadEventDays();
-        calendarMonthView.addDecorator(new CurrentDayDecorator(getResources().getColor(R.color.colorPrimary)));
 
+        renderMonthView();
 
         this.setSupportActionBar(toolbar);
 
-        calendarMonthView.setTopbarVisible(false);  // no title and arrows
+
 
         CalendarDay currentDate = calendarMonthView.getCurrentDate();
         updateDateOnTitle(String.valueOf(currentDate.getYear()), parseMonth(currentDate.getMonth()));  // update title when page changed
 
+
+
+        String accountName = getSharedPreferences(GoogleAPIChecking.PREF, Context.MODE_PRIVATE).
+                getString(GoogleAPIChecking.PREF_ACCOUNT_NAME,  null);
+
+        googleAccountCredential.setSelectedAccountName(accountName);
+    }
+
+    /**
+     * set decorator on the view
+     * show dialog where events are shown by clicking the date tag
+     * change title against current date
+     */
+    private void renderMonthView() {
+        calendarMonthView.setSelectionColor(getResources().getColor(R.color.none));
+        calendarMonthView.addDecorator(new CurrentDayDecorator(getResources().getColor(R.color.colorPrimary)));
+        calendarMonthView.setTopbarVisible(false);  // no title and arrows
         calendarMonthView.setOnMonthChangedListener(new OnMonthChangedListener() {
             @Override
             public void onMonthChanged(MaterialCalendarView widget, CalendarDay date) {
-                System.out.println("Month changed");
-
                 updateDateOnTitle(String.valueOf(date.getYear()), parseMonth(date.getMonth()));
             }
         });
@@ -106,21 +142,26 @@ public class MainActivity extends AppCompatActivity {
                 getEventsAgainstDate(date);
             }
         });
+    }
 
+    private void setupElements() {
+        progressBarMainPage = findViewById(R.id.progressBarMainPage);
+        toolbar = findViewById(R.id.mainToolbar);
+        calendarMonthView = findViewById(R.id.calendarMonthView);
     }
 
     /**
      * sign in the user if the user does not have an account
      */
     private void loginAnonymousUser() {
-        mAuth.signInAnonymously()
+        firebaseAuth.signInAnonymously()
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d("Anonymous sign in", "signInAnonymously:success");
-                            user = mAuth.getCurrentUser();
+                            user = firebaseAuth.getCurrentUser();
                             //updateUI(user);
                         } else {
                             // If sign in fails, display a message to the user.
@@ -149,19 +190,24 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+
         Intent intent;
         switch (item.getItemId()) {
             case R.id.add_event:
                  intent = new Intent(this, AddEventActivity.class);
-                //this.startActivityForResult(intent, ADD_PERSON_REQUEST);
                 this.startActivity(intent);
                 break;
             case R.id.account:
                 intent = new Intent(this, ShowAccountActivity.class);
-                //this.startActivityForResult(intent, ADD_PERSON_REQUEST);
+                this.startActivity(intent);
+                break;
+            case R.id.sync:
+                new MakeRequestTask(googleAccountCredential).execute();
+                this.loadEventDays();
+                break;
+
+            case R.id.credits:
+                intent = new Intent(this, CreditActivity.class);
                 this.startActivity(intent);
                 break;
 
@@ -169,6 +215,11 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * change the bar title to current calendar year and month
+     * @param title
+     * @param subtitle
+     */
     private void updateDateOnTitle(String title, String subtitle) {
         getSupportActionBar().setTitle(title);
         getSupportActionBar().setSubtitle(subtitle);
@@ -176,8 +227,8 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    /*
-    change subtitle accordingly
+    /**
+    parse month to string
      */
     private String parseMonth(int monthInt) {
         String month;
@@ -296,19 +347,15 @@ public class MainActivity extends AppCompatActivity {
     Intent intent = new Intent(this.getApplicationContext(), AlarmReceiver.class);
     alarmIntent = PendingIntent.getBroadcast(this.getApplicationContext(), 0, intent, 0);
 
-    // Set the alarm to start at 8:30 a.m.
+    // alert user at 7:30 a.m.
     Calendar calendar = Calendar.getInstance();
     calendar.setTimeInMillis(System.currentTimeMillis());
     calendar.set(Calendar.HOUR_OF_DAY, 7);
     calendar.set(Calendar.MINUTE, 30);
 
-    // setRepeating() lets you specify a precise custom interval--in this case,
-    // 20 minutes.
-    //alarmMgr.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),1000 * 60 * 20, alarmIntent);
-        //TODO: replace this
-        alarmMgr.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                SystemClock.elapsedRealtime(),
-                        5000, alarmIntent);
+    alarmMgr.setInexactRepeating(AlarmManager.RTC_WAKEUP,
+                                    calendar.getTimeInMillis(),
+                                    AlarmManager.INTERVAL_DAY, alarmIntent);
 
     }
 
@@ -332,5 +379,181 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * An asynchronous task that handles the Google Calendar API call.
+     * Placing the API calls in their own task ensures the UI stays responsive.
+     * get events from google calendar and store to firebase
+     */
+    private class MakeRequestTask extends AsyncTask<Void, Void, List<Event>> {
+        private com.google.api.services.calendar.Calendar mService;
+        private Exception mLastError = null;
+
+        private MakeRequestTask(GoogleAccountCredential credential) {
+            HttpTransport transport = AndroidHttp.newCompatibleTransport();
+            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+            mService = new com.google.api.services.calendar.Calendar.Builder(
+                    transport, jsonFactory, credential)
+                    .setApplicationName("Google Calendar API Android Quickstart")
+                    .build();
+        }
+
+        /**
+         * Background task to call Google Calendar API.
+         * @param params no parameters needed for this task.
+         */
+        @Override
+        protected List<com.app.cooper.time_manager.objects.Event> doInBackground(Void... params) {
+            try {
+                return getDataFromApi();
+            } catch (Exception e) {
+                mLastError = e;
+                cancel(true);
+                return null;
+            }
+        }
+
+        /**
+         * Fetch a list of the next 10 events from the primary calendar.
+         * @return List of Strings describing returned events.
+         * @throws IOException
+         */
+        private List<com.app.cooper.time_manager.objects.Event> getDataFromApi() throws IOException {
+
+            List<com.app.cooper.time_manager.objects.Event> eventList = new ArrayList<>();
+
+            Events events = mService.events().list("primary")  // get events on google calendar
+                    .setOrderBy("startTime")
+                    .setSingleEvents(true)
+                    .execute();
+
+            List<com.google.api.services.calendar.model.Event> items = events.getItems();
+
+            for (com.google.api.services.calendar.model.Event event : items) {  // convert google event object into the way this app can read
+                com.app.cooper.time_manager.objects.Event e = new com.app.cooper.time_manager.objects.Event();
+
+                DateTime start = event.getStart().getDateTime();
+                if (start == null) {
+                    // All-day events don't have start times, so just use
+                    // the start date.
+                    start = event.getStart().getDate();
+                }
+
+                Calendar cs = Calendar.getInstance();
+                cs.setTimeInMillis(start.getValue());
+
+                e.setEventName(event.getSummary());
+                e.setStartDay(cs.get(Calendar.DAY_OF_MONTH));
+                e.setStartMonth(cs.get(Calendar.MONTH));
+                e.setStartYear(cs.get(Calendar.YEAR));
+                e.setStartHour(cs.get(Calendar.HOUR_OF_DAY));
+                e.setStartMinute(cs.get(Calendar.MINUTE));
+
+
+                DateTime end = event.getEnd().getDateTime();
+                if (end == null)
+                    end = event.getEnd().getDate();
+
+                Calendar ce = Calendar.getInstance();
+                ce.setTimeInMillis(end.getValue());
+
+                e.setEndHour(ce.get(Calendar.HOUR_OF_DAY));
+                e.setEndMinute(ce.get(Calendar.MINUTE));
+
+                eventList.add(e);
+            }
+            return eventList;
+        }
+
+
+        @Override
+        protected void onPreExecute() {
+            progressBarMainPage.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected void onPostExecute(List<com.app.cooper.time_manager.objects.Event> output) {
+            progressBarMainPage.setVisibility(View.INVISIBLE);
+            if (output == null || output.size() == 0) {
+                //mOutputText.setText("No results returned.");
+                showError("There is no Events on google calendar");
+            } else {
+                for (com.app.cooper.time_manager.objects.Event e : output)  // save to firebase
+                    saveEventToFirebase(e);
+                Toast.makeText(MainActivity.this, "Sync successful",
+                        Toast.LENGTH_SHORT).show();
+                System.out.println(output);
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            progressBarMainPage.setVisibility(View.INVISIBLE);
+            if (mLastError != null) {
+                if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {
+                    GoogleAPIChecking checking = new GoogleAPIChecking(MainActivity.this);
+                    checking.showGooglePlayServicesAvailabilityErrorDialog(
+                            ((GooglePlayServicesAvailabilityIOException) mLastError)
+                                    .getConnectionStatusCode());
+                } else if (mLastError instanceof UserRecoverableAuthIOException) {
+                    startActivityForResult(
+                            ((UserRecoverableAuthIOException) mLastError).getIntent(),
+                            ShowAccountActivity.REQUEST_AUTHORIZATION);
+                } else {
+                    showError(mLastError.getMessage());
+                }
+            } else {
+                //mOutputText.setText("Request cancelled.");
+                System.out.println("Request cancelled");
+            }
+        }
+    }
+
+    /**
+     * save event to firebase
+     * @param event
+     */
+    private void saveEventToFirebase(final com.app.cooper.time_manager.objects.Event event) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference dayRef = database.getReference("users/" + user.getUid() + "/events/" + event.getDateStamp());
+
+        dayRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            List<com.app.cooper.time_manager.objects.Event> eventList;
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                if(snapshot.getValue() != null) {
+                    GenericTypeIndicator<List<com.app.cooper.time_manager.objects.Event>> t = new GenericTypeIndicator<List<com.app.cooper.time_manager.objects.Event>>() {};
+                    eventList = snapshot.getValue(t);
+                    for (int i=0;i<eventList.size();i++) {
+                        if(event.getId() == eventList.get(i).getId())
+                            eventList.remove(i);
+                    }
+
+                } else {
+                    eventList = new ArrayList<>();
+                }
+
+                eventList.add(event);
+                dayRef.setValue(eventList);
+
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Code
+            }
+        });
+    }
+
+    /**
+     * display error message if failed to login
+     * @param errorMessage
+     */
+    private void showError(String errorMessage) {
+        AlertDialog.Builder saveAlert = new AlertDialog.Builder(this);
+        saveAlert.setTitle("Oops!");
+        saveAlert.setMessage(errorMessage);
+        saveAlert.setPositiveButton("Confirm", null);
+        saveAlert.create().show();
+    }
 
 }
