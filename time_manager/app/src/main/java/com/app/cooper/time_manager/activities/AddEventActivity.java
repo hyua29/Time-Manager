@@ -23,7 +23,7 @@ import android.widget.TextView;
 import com.app.cooper.time_manager.R;
 import com.app.cooper.time_manager.custom.views.pickers.DatePickerFragmentDialog;
 import com.app.cooper.time_manager.custom.views.pickers.EventTypePickerDialog;
-import com.app.cooper.time_manager.custom.views.pickers.LocationPicker;
+import com.app.cooper.time_manager.custom.views.pickers.EventLocationPicker;
 import com.app.cooper.time_manager.custom.views.pickers.RangeTimePickerDialog;
 import com.app.cooper.time_manager.enums.NotificationType;
 import com.app.cooper.time_manager.objects.Event;
@@ -43,7 +43,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-public class AddEventActivity extends AppCompatActivity implements RangeTimePickerDialog.OnTimeSelectListener, LocationPicker.OnLocationSelectListener, DatePickerDialog.OnDateSetListener, EventTypePickerDialog.OnEventTypeSelectListener {
+public class AddEventActivity extends AppCompatActivity implements RangeTimePickerDialog.OnTimeSelectListener, EventLocationPicker.OnLocationSelectListener, DatePickerDialog.OnDateSetListener, EventTypePickerDialog.OnEventTypeSelectListener {
     private Toolbar toolbar;
     private Event event;
     private TextView textViewDate;
@@ -175,7 +175,7 @@ public class AddEventActivity extends AppCompatActivity implements RangeTimePick
      * open map dialog
      */
     private void getLocation() {
-        LocationPicker dialog = new LocationPicker();
+        EventLocationPicker dialog = new EventLocationPicker();
         dialog.show(getSupportFragmentManager(),"");
 
     }

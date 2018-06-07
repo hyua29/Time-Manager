@@ -1,15 +1,18 @@
 package com.app.cooper.time_manager.activities;
 
+import android.Manifest;
 import android.app.AlarmManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 
@@ -28,6 +31,7 @@ import com.app.cooper.time_manager.custom.views.monthview.CurrentDayDecorator;
 import com.app.cooper.time_manager.custom.views.monthview.EventDecorator;
 import com.app.cooper.time_manager.objects.Event;
 import com.app.cooper.time_manager.uilts.FireBaseUtils;
+import com.app.cooper.time_manager.uilts.PermissionChecking;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -67,6 +71,7 @@ import java.util.List;
  */
 public class MainActivity extends AppCompatActivity {
 
+    private final int REQUEST_ID_MULTIPLE_PERMISSIONS = 0;
     private GoogleAccountCredential googleAccountCredential;
 
     private MaterialCalendarView calendarMonthView;
@@ -109,6 +114,8 @@ public class MainActivity extends AppCompatActivity {
         updateDateOnTitle(String.valueOf(currentDate.getYear()), parseMonth(currentDate.getMonth()));  // update title when page changed
 
         this.loadGoogleAccount();
+        String[] PERMISSIONS = {Manifest.permission.RECORD_AUDIO};
+        this.hasPermissions(MainActivity.this, PERMISSIONS);
     }
 
     /**
@@ -554,6 +561,31 @@ public class MainActivity extends AppCompatActivity {
         saveAlert.setMessage(errorMessage);
         saveAlert.setPositiveButton("Confirm", null);
         saveAlert.create().show();
+    }
+
+    /**
+     * check whether this application has the permission and redirect user to setting if permission not granted
+     * @param context
+     * @param permissions
+     * @return
+     */
+    public boolean hasPermissions(Context context, String[] permissions) {
+        List<String> listPermissionsNeeded = new ArrayList<>();
+        if (context != null && permissions != null) {
+            for (String permission : permissions) {
+                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+
+                    listPermissionsNeeded.add(permission);
+                }
+            }
+        }
+
+        if (!listPermissionsNeeded.isEmpty()) {
+            ActivityCompat.requestPermissions(this, listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]), REQUEST_ID_MULTIPLE_PERMISSIONS);
+            return false;
+        }
+
+        return true;
     }
 
 }
