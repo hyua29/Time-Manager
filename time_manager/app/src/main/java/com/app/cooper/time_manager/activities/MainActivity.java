@@ -31,7 +31,6 @@ import com.app.cooper.time_manager.custom.views.monthview.CurrentDayDecorator;
 import com.app.cooper.time_manager.custom.views.monthview.EventDecorator;
 import com.app.cooper.time_manager.objects.Event;
 import com.app.cooper.time_manager.uilts.FireBaseUtils;
-import com.app.cooper.time_manager.uilts.PermissionChecking;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -89,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         this.createNotificationChannel(this);
         this.setNotificationAlarm();
-
+        this.setupElements();
 
         googleAccountCredential = GoogleAccountCredential.usingOAuth2(
                 getApplicationContext(), Arrays.asList(GoogleAPIChecking.SCOPES))
@@ -102,19 +101,18 @@ public class MainActivity extends AppCompatActivity {
 
         if (user == null) {
             this.loginAnonymousUser();
-        } else
-            System.out.println(user.getUid());
+        } else {
+            this.loadEventDays();
+            this.renderMonthView();
+        }
 
-        this.setupElements();
-        this.loadEventDays();
-        this.renderMonthView();
         this.setSupportActionBar(toolbar);
 
         CalendarDay currentDate = calendarMonthView.getCurrentDate();
         updateDateOnTitle(String.valueOf(currentDate.getYear()), parseMonth(currentDate.getMonth()));  // update title when page changed
 
         this.loadGoogleAccount();
-        String[] PERMISSIONS = {Manifest.permission.RECORD_AUDIO};
+        String[] PERMISSIONS = {Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
         this.hasPermissions(MainActivity.this, PERMISSIONS);
     }
 
@@ -133,6 +131,7 @@ public class MainActivity extends AppCompatActivity {
      * change title against current date
      */
     private void renderMonthView() {
+        System.out.println(calendarMonthView);
         calendarMonthView.setSelectionColor(getResources().getColor(R.color.none));
         calendarMonthView.addDecorator(new CurrentDayDecorator(getResources().getColor(R.color.colorPrimary)));
         calendarMonthView.setTopbarVisible(false);  // no title and arrows
@@ -161,6 +160,7 @@ public class MainActivity extends AppCompatActivity {
      * sign in the user if the user does not have an account
      */
     private void loginAnonymousUser() {
+
         firebaseAuth.signInAnonymously()
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -169,6 +169,9 @@ public class MainActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d("Anonymous sign in", "signInAnonymously:success");
                             user = firebaseAuth.getCurrentUser();
+                            loadEventDays();
+                            renderMonthView();
+                            System.out.println("AAAAAAAAAAAAAAAAAAAAAAA");
                             //updateUI(user);
                         } else {
                             // If sign in fails, display a message to the user.
@@ -185,7 +188,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        this.loadEventDays();
+        if(user!=null)
+            this.loadEventDays();
     }
 
     @Override
@@ -287,6 +291,8 @@ public class MainActivity extends AppCompatActivity {
      * load event day at start up
      */
     private void loadEventDays() {
+        System.out.println(user);
+        System.out.println(firebaseDatabase);
         final DatabaseReference dayRef = firebaseDatabase.getReference("users/" + user.getUid() + "/events/");
 
         dayRef.addListenerForSingleValueEvent(new ValueEventListener() {
